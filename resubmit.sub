@@ -1,0 +1,229 @@
+executable = scripts/alma9-container.sh
+output = log.d/stdout.$(CLUSTER).$(PROCESS)
+error = log.d/stderr.$(CLUSTER).$(PROCESS)
+log = resubmit.log
+notification = never
+universe = vanilla
+should_transfer_files = yes
+#x509userproxy=/tmp/x509up_u7896
+WhenToTransferOutput = ON_EXIT
+on_exit_hold = (ExitBySignal==False)&&(ExitCode!=0)
+on_exit_remove = (ExitBySignal==False)&&(ExitCode==0)
+#Requirements = (HAS_SINGULARITY==true)&&(regexp(".*.jlab.org",TARGET.MACHINE,"i")==FALSE)
+Requirements = (HAS_SINGULARITY==true)&&(HAS_CVMFS_oasis_opensciencegrid_org==true)&&(HAS_CVMFS_singularity_opensciencegrid_org==true)
+RequestMemory = 3800
+RequestDisk = 8000000
++MaxWallTimeMins = 720
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/rjones30/gluex:latest"
+transfer_input_files = scripts/workscript.sh,config/hd_recon.config,/tmp/vt_u7896
+#transfer_input_files = scripts/mergehists.sh,/tmp/vt_u7896
+
+arguments = ./workscript.sh particle_g34 9 0
+queue 1
+arguments = ./workscript.sh particle_g31 10 35
+queue 1
+
+#arguments = ./mergehists.sh particle_gun 1
+#queue 1
+#arguments = ./mergehists.sh particle_gun 2
+#queue 1
+#arguments = ./mergehists.sh particle_gun 3
+#queue 1
+#arguments = ./mergehists.sh particle_gun 4
+#queue 1
+#arguments = ./mergehists.sh particle_gun 5
+#queue 1
+#arguments = ./mergehists.sh particle_gun 6
+#queue 1
+#arguments = ./mergehists.sh particle_gun 7
+#queue 1
+#arguments = ./mergehists.sh particle_gun 8
+#queue 1
+#arguments = ./mergehists.sh particle_gun 9
+#queue 1
+#arguments = ./mergehists.sh particle_gun 10
+#queue 1
+#arguments = ./mergehists.sh particle_gun 11
+#queue 1
+#arguments = ./mergehists.sh particle_gun 12
+#queue 1
+#arguments = ./mergehists.sh particle_gun 13
+#queue 1
+#arguments = ./mergehists.sh particle_gun 14
+#queue 1
+#arguments = ./mergehists.sh particle_gun 15
+#queue 1
+#arguments = ./mergehists.sh particle_gun 16
+#queue 1
+#arguments = ./mergehists.sh particle_gun 17
+#queue 1
+#arguments = ./mergehists.sh particle_gun 18
+#queue 1
+#arguments = ./mergehists.sh particle_gun 19
+#queue 1
+#arguments = ./mergehists.sh particle_gun 20
+#queue 1
+#arguments = ./mergehists.sh particle_gun 21
+#queue 1
+#arguments = ./mergehists.sh particle_gun 22
+#queue 1
+#arguments = ./mergehists.sh particle_gun 23
+#queue 1
+#arguments = ./mergehists.sh particle_gun 24
+#queue 1
+#arguments = ./mergehists.sh particle_gun 25
+#queue 1
+#arguments = ./mergehists.sh particle_gun 26
+#queue 1
+#arguments = ./mergehists.sh particle_gun 27
+#queue 1
+#arguments = ./mergehists.sh particle_gun 28
+#queue 1
+#arguments = ./mergehists.sh particle_gun 29
+#queue 1
+#arguments = ./mergehists.sh particle_gun 30
+#queue 1
+#arguments = ./mergehists.sh particle_gun 31
+#queue 1
+#arguments = ./mergehists.sh particle_gun 32
+#queue 1
+#arguments = ./mergehists.sh particle_gun 33
+#queue 1
+#arguments = ./mergehists.sh particle_gun 34
+#queue 1
+#arguments = ./mergehists.sh particle_g31 1
+#queue 1
+#arguments = ./mergehists.sh particle_g31 2
+#queue 1
+#arguments = ./mergehists.sh particle_g31 3
+#queue 1
+#arguments = ./mergehists.sh particle_g31 4
+#queue 1
+#arguments = ./mergehists.sh particle_g31 5
+#queue 1
+#arguments = ./mergehists.sh particle_g31 6
+#queue 1
+#arguments = ./mergehists.sh particle_g31 7
+#queue 1
+#arguments = ./mergehists.sh particle_g31 8
+#queue 1
+#arguments = ./mergehists.sh particle_g31 9
+#queue 1
+#arguments = ./mergehists.sh particle_g31 10
+#queue 1
+#arguments = ./mergehists.sh particle_g31 11
+#queue 1
+#arguments = ./mergehists.sh particle_g31 12
+#queue 1
+#arguments = ./mergehists.sh particle_g31 13
+#queue 1
+#arguments = ./mergehists.sh particle_g31 14
+#queue 1
+#arguments = ./mergehists.sh particle_g31 15
+#queue 1
+#arguments = ./mergehists.sh particle_g31 16
+#queue 1
+#arguments = ./mergehists.sh particle_g31 17
+#queue 1
+#arguments = ./mergehists.sh particle_g31 18
+#queue 1
+#arguments = ./mergehists.sh particle_g31 19
+#queue 1
+#arguments = ./mergehists.sh particle_g31 20
+#queue 1
+#arguments = ./mergehists.sh particle_g31 21
+#queue 1
+#arguments = ./mergehists.sh particle_g31 22
+#queue 1
+#arguments = ./mergehists.sh particle_g31 23
+#queue 1
+#arguments = ./mergehists.sh particle_g31 24
+#queue 1
+#arguments = ./mergehists.sh particle_g31 25
+#queue 1
+#arguments = ./mergehists.sh particle_g31 26
+#queue 1
+#arguments = ./mergehists.sh particle_g31 27
+#queue 1
+#arguments = ./mergehists.sh particle_g31 28
+#queue 1
+#arguments = ./mergehists.sh particle_g31 29
+#queue 1
+#arguments = ./mergehists.sh particle_g31 30
+#queue 1
+#arguments = ./mergehists.sh particle_g31 31
+#queue 1
+#arguments = ./mergehists.sh particle_g31 32
+#queue 1
+#arguments = ./mergehists.sh particle_g31 33
+#queue 1
+#arguments = ./mergehists.sh particle_g31 34
+#queue 1
+#arguments = ./mergehists.sh particle_g34 1
+#queue 1
+#arguments = ./mergehists.sh particle_g34 2
+#queue 1
+#arguments = ./mergehists.sh particle_g34 3
+#queue 1
+#arguments = ./mergehists.sh particle_g34 4
+#queue 1
+#arguments = ./mergehists.sh particle_g34 5
+#queue 1
+#arguments = ./mergehists.sh particle_g34 6
+#queue 1
+#arguments = ./mergehists.sh particle_g34 7
+#queue 1
+#arguments = ./mergehists.sh particle_g34 8
+#queue 1
+#arguments = ./mergehists.sh particle_g34 9
+#queue 1
+#arguments = ./mergehists.sh particle_g34 10
+#queue 1
+#arguments = ./mergehists.sh particle_g34 11
+#queue 1
+#arguments = ./mergehists.sh particle_g34 12
+#queue 1
+#arguments = ./mergehists.sh particle_g34 13
+#queue 1
+#arguments = ./mergehists.sh particle_g34 14
+#queue 1
+#arguments = ./mergehists.sh particle_g34 15
+#queue 1
+#arguments = ./mergehists.sh particle_g34 16
+#queue 1
+#arguments = ./mergehists.sh particle_g34 17
+#queue 1
+#arguments = ./mergehists.sh particle_g34 18
+#queue 1
+#arguments = ./mergehists.sh particle_g34 19
+#queue 1
+#arguments = ./mergehists.sh particle_g34 20
+#queue 1
+#arguments = ./mergehists.sh particle_g34 21
+#queue 1
+#arguments = ./mergehists.sh particle_g34 22
+#queue 1
+#arguments = ./mergehists.sh particle_g34 23
+#queue 1
+#arguments = ./mergehists.sh particle_g34 24
+#queue 1
+#arguments = ./mergehists.sh particle_g34 25
+#queue 1
+#arguments = ./mergehists.sh particle_g34 26
+#queue 1
+#arguments = ./mergehists.sh particle_g34 27
+#queue 1
+#arguments = ./mergehists.sh particle_g34 28
+#queue 1
+#arguments = ./mergehists.sh particle_g34 29
+#queue 1
+#arguments = ./mergehists.sh particle_g34 30
+#queue 1
+#arguments = ./mergehists.sh particle_g34 31
+#queue 1
+#arguments = ./mergehists.sh particle_g34 32
+#queue 1
+#arguments = ./mergehists.sh particle_g34 33
+#queue 1
+#arguments = ./mergehists.sh particle_g34 34
+#queue 1
