@@ -1,0 +1,26 @@
+# Richard Jones
+# February 27, 2021
+#
+executable = scripts/alma9-container.sh
+output = log.d/stdout.$(CLUSTER).$(PROCESS)
+error = log.d/stderr.$(CLUSTER).$(PROCESS)
+log = mergehists.log
+notification = never
+universe = vanilla
+#x509userproxy=/tmp/x509up_u7896
+should_transfer_files = yes
+transfer_input_files = scripts/mergehists.sh,/tmp/vt_u7896
+WhenToTransferOutput = ON_EXIT
+on_exit_hold = (ExitBySignal==False)&&(ExitCode!=0)
+on_exit_remove = (ExitBySignal==False)&&(ExitCode==0)
+#Requirements = (HAS_SINGULARITY==true)&&(regexp(".*.jlab.org",TARGET.MACHINE,"i")==FALSE)
+Requirements = (HAS_SINGULARITY==true)&&(HAS_CVMFS_oasis_opensciencegrid_org==true)&&(HAS_CVMFS_singularity_opensciencegrid_org==true)
+RequestMemory = 3800
+RequestDisk = 8000000
++MaxWallTimeMins = 720
++RouteTo = "gluskap"
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/rjones30/gluex:latest"
+#simType = particle_g34
+#simId = 1
+arguments = ./mergehists.sh $(simType) $(simId)
+queue 1

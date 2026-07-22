@@ -1,0 +1,25 @@
+# Richard Jones
+# February 27, 2021
+#
++simId = "034"
+executable = scripts/alma9-container.sh
+output = sim_$$([simId])/log.d/stdout.$(CLUSTER).$(PROCESS)
+error = sim_$$([simId])/log.d/stderr.$(CLUSTER).$(PROCESS)
+log = particle_gun.log
+notification = never
+universe = vanilla
+should_transfer_files = yes
+#x509userproxy=/tmp/x509up_u7896
+transfer_input_files = scripts/workscript.sh,config/hd_recon.config,/tmp/vt_u7896
+WhenToTransferOutput = ON_EXIT
+on_exit_hold = (ExitBySignal==False)&&(ExitCode!=0)
+on_exit_remove = (ExitBySignal==False)&&(ExitCode==0)
+Requirements = (HAS_SINGULARITY==true)&&(HAS_CVMFS_oasis_opensciencegrid_org==true)&&(HAS_CVMFS_singularity_opensciencegrid_org==true)
+RequestMemory = 3800
+RequestDisk = 8000000
++MaxWallTimeMins = 720
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/rjones30/gluex:latest"
+arguments = ./workscript.sh particle_gun $$([simId]) $(PROCESS)
+#queue 100 --rescaled by factor 10.0
+#queue 1000 --rescaled by factor 0.1
+queue 100
