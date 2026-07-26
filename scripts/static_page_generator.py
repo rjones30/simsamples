@@ -10,6 +10,8 @@ import os
 import sys
 import glob
 import subprocess
+from pathlib import Path
+from datetime import datetime, timezone
 
 def usage():
    print("Usage: static_page_generator.py")
@@ -18,11 +20,23 @@ def usage():
 if len(sys.argv) > 1:
    usage()
 
-httpserver = "http://gryphn.phys.uconn.edu/rootbrowser/js/?file=../files"
-xrootdserver = "nod26.phys.uconn.edu"
-webdavserver = "https://grinch.phys.uconn.edu:2843"
-pnfs4root = "/pnfs4/phys.uconn.edu/data"
-sampledata = "/Gluex/simulation/simsamples/"
+stores = {
+  "uconn0": {
+    "httpserver": "https://gryphn.phys.uconn.edu/rootbrowser/?file=root://nod26.phys.uconn.edu/",
+    "xrootdserver": "nod26.phys.uconn.edu",
+    "webdavserver": "https://grinch.phys.uconn.edu:2843",
+    "pnfs4root": "/pnfs4/phys.uconn.edu/data",
+    "sampledata": "/Gluex/simulation/simsamples/",
+  },
+  "uconn1": {
+    "httpserver": "https://gryphn.phys.uconn.edu/rootbrowser/?file=root://nod65.phys.uconn.edu/",
+    "xrootdserver": "nod65.phys.uconn.edu",
+    "webdavserver": "https://nod60.phys.uconn.edu:2843",
+    "pnfs4root": "/dcache",
+    "sampledata": "/Gluex/rawdata/simulation/simsamples/",
+  }
+}
+
 simsamples = "/home/www/docs/halld/simsamples/"
 page1 = open(simsamples + "latest_draft.html", "w")
 
@@ -67,17 +81,21 @@ prange  = [ (0,0),
           ]
 
 def get_samples():
-   pro = subprocess.Popen(["ls", pnfs4root + sampledata],
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-   samplelist = pro.communicate()[0].decode('utf-8')
-   if pro.wait() != 0:
-      print("Error - listing of simsamples data directory over pnfs4 failed!")
-      print("Cannot continue.")
-      sys.exit(9)
    samples = []
-   for sample in samplelist.split('\n'):
-      if "particle_g" in sample:
-         samples.append(sample.split('/')[-1])
+   for storename,store in stores.items():
+      pro = subprocess.Popen(["ls", store["pnfs4root"] + store["sampledata"]],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      samplelist = pro.communicate()[0].decode('utf-8')
+      if pro.wait() != 0:
+         print("Error - listing of simsamples data directory over pnfs4 failed!")
+         print("Cannot continue.")
+         sys.exit(9)
+      for sample in samplelist.split('\n'):
+         if "particle_g" in sample:
+            nfs_dir = Path(store["pnfs4root"] + store["sampledata"] + sample)
+            mtime_timestamp = nfs_dir.stat().st_mtime
+            mtime_string = datetime.fromtimestamp(mtime_timestamp).strftime("%Y.%m.%d")
+            samples.append(f"{storename}::{mtime_string}::{sample.split('/')[-1]}")
    return samples
 
 def gen_header():
@@ -129,13 +147,15 @@ def gen_table():
 """)
    sortable = {}
    for sample in samples:
+      datestring = sample.split('::')[1]
       if "-" in sample:
          prefix, suffix = sample.split('-', 1)
-         key = suffix
+         prefix = prefix.split('::')[2]
+         key = f"{datestring} {suffix}"
       else:
-         prefix = sample
+         prefix = sample.split('::')[2]
          suffix = "latest"
-         key = "zzz"
+         key = f"{datestring} {suffix}"
       for s in range(1, len(particle)):
          seq = "{0:03d}".format(s)
          sortable[key + ":{0:03d}:".format(999-s) + prefix] = (sample,
@@ -147,6 +167,9 @@ def gen_table():
    lastprange = ""
    for samplekey in sorted(sortable, reverse=True):
       sample = sortable[samplekey]
+      storename = sample[0].split('::')[0]
+      sampledate = sample[0].split('::')[1]
+      samplename = sample[0].split('::')[2]
       s = int(sample[1])
       if sample[2] == "particle_gun":
          sim = "G4"
@@ -163,7 +186,7 @@ def gen_table():
       else:
          page1.write("  <tr>\n")
       if sample[3] != lastset:
-         page1.write("   <td valign=\"top\">" + sample[3] + "</td>\n")
+         page1.write("   <td valign=\"top\">" + sample[3] + " (" + sampledate + ")" + "</td>\n")
          lastset = sample[3]
       else:
          page1.write("   <td valign=\"top\"></td>\n")
@@ -181,9 +204,9 @@ def gen_table():
       else:
          page1.write("   <td></td>\n")
       page1.write("   <td align=\"center\" valign=\"top\">" + sim + "</td>\n")
-      datadir = pnfs4root + sampledata + sample[0] + "/"
+      datadir = stores[storename]["pnfs4root"] + stores[storename]["sampledata"] + samplename + "/"
       controlin = "sim_" + sample[1] + "/control.in"
-      if os.path.isfile(simsamples + sample[2] + ".d/" + controlin):
+      if os.path.isfile(os.path.join(simsamples, sample[2] + ".d", controlin)):
          css = "livelink"
       else:
          css = "deadlink"
@@ -191,53 +214,57 @@ def gen_table():
                   sample[2] + ".d/" + controlin + "\" " +
                   "class=\"" + css + "\">control.in</a></td>\n")
       logdir = sample[2] + ".d/sim_" + sample[1] + "/log.d"
-      if os.path.isdir(simsamples + logdir):
+      if os.path.isdir(os.path.join(simsamples, logdir)):
          css = "livelink"
       else:
          css = "deadlink"
       page1.write("   <td align=\"center\" valign=\"top\"><a href=\"" +
                    logdir + "\" class=\"" + css + "\">stdout,stderr</a></td>\n")
-      simhddm = sample[2] + sample[1] + "_001.hddm"
-      if os.path.isfile(datadir + simhddm):
-         css = "livelink"
-      else:
-         css = "deadlink"
+      css = "deadlink"
+      for ending in ("_0001.hddm", "_001.hddm"):
+         simhddm = sample[2] + sample[1] + ending
+         if os.path.isfile(os.path.join(datadir, simhddm)):
+            css = "livelink"
+            break
       page1.write("   <td align=\"center\" valign=\"top\"><a href=\"" + 
-                  webdavserver + sampledata + sample[0] + "/" + simhddm +
+                  stores[storename]["webdavserver"] + stores[storename]["sampledata"] + samplename + "/" + simhddm +
                   "\" class=\"" + css + "\">sim.hddm</a>, ")
-      smearedhddm = sample[2] + sample[1] + "_001_smeared.hddm"
-      if os.path.isfile(datadir + smearedhddm):
-         css = "livelink"
-      else:
-         css = "deadlink"
+      css = "deadlink"
+      for ending in ("_0001_smeared.hddm", "_001_smeared.hddm"):
+         smearedhddm = sample[2] + sample[1] + ending
+         if os.path.isfile(os.path.join(datadir, smearedhddm)):
+            css = "livelink"
+            break
       page1.write("<a href=\"" +
-                  webdavserver + sampledata + sample[0] + "/" +
+                  stores[storename]["webdavserver"] + stores[storename]["sampledata"] + samplename + "/" +
                   smearedhddm + "\" class=\"" + css + "\">smeared.hddm</a>, ")
-      resthddm = sample[2] + sample[1] + "_001_rest.hddm"
-      if os.path.isfile(datadir + resthddm):
-         css = "livelink"
-      else:
-         css = "deadlink"
+      css = "deadlink"
+      for ending in ("_0001_rest.hddm", "_001_rest.hddm"):
+         resthddm = sample[2] + sample[1] + ending
+         if os.path.isfile(os.path.join(datadir, resthddm)):
+            css = "livelink"
+            break
       page1.write("<a href=\"" +
-                  webdavserver + sampledata + sample[0] + "/" +
+                  stores[storename]["webdavserver"] + stores[storename]["sampledata"] + samplename + "/" +
                   resthddm + "\" class=\"" + css + "\">rest.hddm</a>, ")
-      restroot = sample[2] + sample[1] + "_001_rest.root"
-      if os.path.isfile(datadir + resthddm):
-         css = "livelink"
-      else:
-         css = "deadlink"
+      css = "deadlink"
+      for ending in ("_0001_rest.root", "_001_rest.root"):
+         restroot = sample[2] + sample[1] + ending
+         if os.path.isfile(os.path.join(datadir, restroot)):
+            css = "livelink"
+            break
       page1.write("<a href=\"" +
-                  webdavserver + sampledata + sample[0] + "/" +
+                  stores[storename]["webdavserver"] + stores[storename]["sampledata"] + samplename + "/" +
                   restroot + "\" class=\"" + css + "\">rest.root</a></td>\n")
       mergedroot = sample[2] + sample[1] + "_merged.root"
-      if os.path.isfile(datadir + mergedroot):
+      if os.path.isfile(os.path.join(datadir, mergedroot)):
          css = "livelink"
       else:
          css = "deadlink"
       page1.write("   <td align=\"center\" valign=\"top\"><a href=\"" + 
-                  httpserver + sampledata + sample[0] + "/" + mergedroot +
+                  stores[storename]["httpserver"] + stores[storename]["sampledata"] + samplename + "/" + mergedroot +
                   "\" class=\"" + css + "\" target=\"_blank\">plot browser</a>" +
-                  ", <a href=\"" + webdavserver + sampledata + sample[0] + "/" +
+                  ", <a href=\"" + stores[storename]["webdavserver"] + stores[storename]["sampledata"] + samplename + "/" +
                   mergedroot + "\" class=\"" + css + "\">merged.root</a></td>\n")
       page1.write("  </tr>\n")
    page1.write("</table>\n")
