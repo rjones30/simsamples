@@ -155,6 +155,7 @@ hd_root --loadconfigs hd_recon.config \
         -Pjana:show_ticker=$ticker \
         -Pjana:timeout=300 \
         -Pjana:warmup_timeout=1200 \
+        -PTRIG:BYPASS=1 \
         -PTRK:SAVE_TRUNCATED_DEDX=1 \
         sample_smeared.hddm || clean_exit $? "hd_root crashed"
 
