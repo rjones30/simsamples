@@ -15,9 +15,10 @@ import stat
 import json
 import time
 
-xrdserver = "nod60.phys.uconn.edu"
+xrdwriter = "nod60.phys.uconn.edu"
 outdir = "/Gluex/rawdata/simulation/simsamples/"
-#xrdsever = "grinch.phys.uconn.edu:1095"
+xrdreader = "nod65.phys.uconn.edu"
+#xrdwriter = "grinch.phys.uconn.edu:1095"
 #outdir = "/Gluex/simulation/simsamples/"
 stagedir = "/nfs/direct/jonesrt/simsamples/"
 
@@ -68,7 +69,7 @@ def stageout(fpath):
    print("pushing " + fpath + " to xrootd from staging area")
    pro = subprocess.Popen(["xrdcp", "-f",
                            stagedir + simType + ".d/" + fpath,
-                           "root://" + xrdserver + outdir + simType + "/" + fpath],
+                           "root://" + xrdwriter + outdir + simType + "/" + fpath],
                           stdout=subprocess.PIPE, text=True)
    proresp = pro.communicate()[0]
    if pro.wait() != 0:
@@ -105,7 +106,7 @@ for line in open(stagedir + simType + ".d/sim_" + simId + "/{0}.sub".format(simT
       nexpect = int(m.group(1))
 jobids = [dict.fromkeys(range(nexpect)) for pat in pats]
 
-pro = subprocess.Popen(["xrdfs", xrdserver, "ls", outdir + simType], text=True,
+pro = subprocess.Popen(["xrdfs", xrdreader, "ls", outdir + simType], text=True,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 outlist = pro.communicate()[0]
 if pro.wait() != 0:

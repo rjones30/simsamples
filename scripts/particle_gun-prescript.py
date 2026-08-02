@@ -18,9 +18,10 @@ with open("/tmp/prescript_debug.txt", "w") as f:
     f.write(f"PATH={os.environ.get('PATH','')}\n")
     f.write(f"cwd={os.getcwd()}\n")
 
-xrdserver = "nod60.phys.uconn.edu"
+xrdwriter = "nod60.phys.uconn.edu"
 outdir = "/Gluex/rawdata/simulation/simsamples/"
-#xrdserver = "grinch.phys.uconn.edu:1095"
+xrdreader = "nod65.phys.uconn.edu"
+#xrdwriter = "grinch.phys.uconn.edu:1095"
 #outdir = "/Gluex/simulation/simsamples/"
 
 vtoken = "/tmp/vt_u7896"
@@ -60,7 +61,7 @@ os.environ['BEARER_TOKEN'] = bearer_token
 # push a copy of the control.in for this job to the output directory on xrootd
 # also verifies that xrootd is running and the output directory exists
 inURI = os.getcwd() + "/sim_{0}/control.in".format(simId)
-outURI = "roots://" + xrdserver + outdir + simType + "/control.in_{0}".format(simId)
+outURI = "roots://" + xrdwriter + outdir + simType + "/control.in_{0}".format(simId)
 pro = subprocess.Popen(["xrdcp", "-f", inURI, outURI],
                        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 outlist = pro.communicate()[0]

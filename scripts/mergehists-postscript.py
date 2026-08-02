@@ -14,9 +14,10 @@ import os
 import json
 import time
 
-xrdserver = "nod60.phys.uconn.edu"
+xrdwriter = "nod60.phys.uconn.edu"
 outdir = "/Gluex/rawdata/simulation/simsamples/"
-#xrdserver = "grinch.phys.uconn.edu:1095"
+xrdreader = "nod65.phys.uconn.edu"
+#xrdwriter = "grinch.phys.uconn.edu:1095"
 #outdir = "/Gluex/simulation/simsamples/"
 stagedir = "/nfs/direct/jonesrt/simsamples/"
 
@@ -63,7 +64,7 @@ def stageout(fpath):
    os.environ['BEARER_TOKEN'] = bearer_token
    print("pushing " + fpath + " to xrootd from staging area")
    pro = subprocess.Popen(["xrdcp", "-f", stagedir + "mergehists.d/" + fpath,
-                           "root://" + xrdserver + outdir + simType + "/" + fpath],
+                           "root://" + xrdwriter + outdir + simType + "/" + fpath],
                           stdout=subprocess.PIPE, text=True)
    proresp = pro.communicate()[0]
    if pro.wait() != 0:
@@ -89,7 +90,7 @@ for line in stagelist.split('\n'):
             stageout(straggler)
 
 # verify that the output data are postsent on the xrootd server
-pro = subprocess.Popen(["xrdfs", xrdserver, "ls", outdir + simType], text=True,
+pro = subprocess.Popen(["xrdfs", xrdreader, "ls", outdir + simType], text=True,
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 outlist = pro.communicate()[0]
 if pro.wait() != 0:

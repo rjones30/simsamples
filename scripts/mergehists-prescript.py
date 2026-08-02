@@ -18,9 +18,10 @@ with open("/tmp/prescript_debug.txt", "w") as f:
     f.write(f"PATH={os.environ.get('PATH','')}\n")
     f.write(f"cwd={os.getcwd()}\n")
 
-xrdserver = "nod60.phys.uconn.edu"
+xrdwriter = "nod60.phys.uconn.edu"
 outdir = "/Gluex/rawdata/simulation/simsamples/"
-#xrdserver = "grinch.phys.uconn.edu:1095"
+xrdreader = "nod65.phys.uconn.edu"
+#xrdwriter = "grinch.phys.uconn.edu:1095"
 #outdir = "/Gluex/simulation/simsamples/"
 
 vtoken = "/tmp/vt_u7896"
@@ -58,7 +59,7 @@ if not bearer_token:
 os.environ['BEARER_TOKEN'] = bearer_token
 
 # check that xrootd is running and the output directory exists
-pro = subprocess.Popen(["xrdfs", xrdserver, "ls", outdir + simType], text=True,
+pro = subprocess.Popen(["xrdfs", xrdreader, "ls", outdir + simType], text=True,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 outlist = pro.communicate()[0]
 if pro.wait() != 0:
@@ -72,7 +73,7 @@ for line in outlist.split('\n'):
    for i in range(1):
       if pats[i].search(line.rstrip()):
         outfile = line.rstrip().split()[1]
-        pro = subprocess.Popen(["xrdfs", xrdserver, "rm", outfile], text=True,
+        pro = subprocess.Popen(["xrdfs", xrdwriter, "rm", outfile], text=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if pro.wait() != 0:
            sys.exit(7)
